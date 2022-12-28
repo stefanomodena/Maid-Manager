@@ -139,6 +139,9 @@ image CassandraNeutral:
 image EmilyNeutral:
     "emily neutral.png"
 
+image RebeccaNeutral:
+    "rebecca neutral.png"
+
 # if clock_status == 1:
 #     image outside:
 #         "home out day.png"
@@ -365,7 +368,14 @@ label aftertutorial:
 
         
 
-    m "But now we need to rest, talk to you tomorrow!"
+    m "But after a maid finishes a task, she needs to rest. So talk to you tomorrow!"
+
+    m "One last thing, you need money to cover our expenses, food, water, maids paymeent, etc."
+
+    m "Those will be deducted from our money, I mean, your money at the end of the day"
+
+    m "Bye, bye! See you tomorrow!"
+
 
     jump endday
 
@@ -377,9 +387,14 @@ label endday:
         firstMaid.status = "available"
         secondMaid.status = "available"
         thirdMaid.status = "available"
+        fourthMaid.status = "available"
+
+        maitananceCosts = 50 
+
+        money -= maitananceCosts
 
 
-    "The day ends and you and the maids rest."
+    "The day ends and you and the maids rest.\n$[maitananceCosts] was deducted to cover expenses. You now have: $[money]"
 
     jump managermenu
     # This ends the game.
@@ -476,7 +491,7 @@ label taskDescription:
             jump taskResolution
 
         "[maidsList[3].name]" if maidsList[3].status == "available" and maidsList[3].name in hiredMaidsList:
-            show EmilyNeutral with dissolve
+            show RebeccaNeutral with dissolve
             $ chosen_maid = maidsList[3].name
             $ requirement = thirdMaid
             $ maidsList[3].status = "unavailable"
@@ -515,9 +530,45 @@ label taskResolution:
 
 label maidManagment1:
 
-    m "Sorry, this hasn't been implametaded yet"
+    hide MaidNeutral with dissolve
 
-    jump managermenu
+    menu:
+        m "Choose a maid to manage:"
+
+        "[maidName]":
+            show MaidNeutral with dissolve
+            m "This is [maidName]"
+            hide MaidNeutral with dissolve
+            jump maidManagment1
+
+        "[maidsList[1].name]" if maidsList[1].name in hiredMaidsList:
+            $ maidId = 1
+            $ nameManaged = maidsList[maidId].name
+            show CassandraNeutral with dissolve
+            "This is [nameManaged]"
+            hide CassandraNeutral with dissolve
+            jump maidManagment1
+
+        "[maidsList[2].name]" if maidsList[2].status == "available" and maidsList[2].name in hiredMaidsList:
+            $ maidId = 2
+            $ nameManaged = maidsList[maidId].name
+            show EmilyNeutral with dissolve
+            "This is [nameManaged]"
+            hide EmilyNeutral with dissolve
+            jump maidManagment1
+
+        "[maidsList[3].name]" if maidsList[3].status == "available" and maidsList[3].name in hiredMaidsList:
+            $ maidId = 3
+            $ nameManaged = maidsList[maidId].name
+            show RebeccaNeutral with dissolve
+            "This is [nameManaged]"
+            hide RebeccaNeutral with dissolve
+            jump maidManagment1
+
+
+        "Go back":
+            jump managermenu
+
 
 label hireMaids:
 
@@ -550,12 +601,20 @@ label hireMaids:
 
         "[maidsList[2].name]" if maidsList[2].hired == False:
             show EmilyNeutral with dissolve
-
+            $ maidId = 2
+            if hiring_process(maidId, maidCost):
+                m "Congrats! You hired [maidsList[2].name]"
+            else:
+                m "Sorry, you don't have enough money"
             jump hireMaids
 
         "[maidsList[3].name]" if maidsList[3].hired == False:
-            show EmilyNeutral with dissolve
-
+            show RebeccaNeutral with dissolve
+            $ maidId = 3
+            if hiring_process(maidId, maidCost):
+                m "Congrats! You hired [maidsList[3].name]"
+            else:
+                m "Sorry, you don't have enough money"
             jump hireMaids
 
 
