@@ -115,6 +115,17 @@
     money = 0
 
 
+    def levelingup(maid):
+        global didLevel
+        if maid.xp >= maid.level * 10:
+            didLevel = True
+            maid.level += 1
+            maid.xp = 0
+            return didLevel
+        else:
+            didLevel = False
+            return didLevel
+
     
     
 
@@ -410,6 +421,8 @@ label managermenu:
     m "Good morning! Now I am [maidStatus]"
     menu:
 
+
+        
         m "What do you want to do now?\n
         we have $[money]"
 
@@ -518,13 +531,22 @@ label taskResolution:
             taskPayment = tasks[index].base_payment
             taskPayment = taskPayment + (taskPayment * (skill_level / 10))
             money += taskPayment
-            ResolutionText = f"Great! {chosen_maid} was successful! We got payed ${taskPayment}. Now we have ${money}"
+            exp = tasks[index].difficulty
+            requirement.xp += exp
+            levelingup(requirement)
+            if didLevel:
+                levelUpText = f"{chosen_maid} has leveled up! She is now at level: {requirement.level}"
+            ResolutionText = f"Great! {chosen_maid} was successful! We got payed ${taskPayment} and she got exp. Now we have ${money}"
         else:
             ResolutionText = f"{chosen_maid} wasn't able to peform the task!"
 
+    if didLevel:
+        m "[ResolutionText], [levelUpText]"
+    else:
+        m "[ResolutionText]"
 
-    m "[ResolutionText]"
 
+        
     jump managermenu
 
 
@@ -537,7 +559,8 @@ label maidManagment1:
 
         "[maidName]":
             show MaidNeutral with dissolve
-            m "This is [maidName]"
+            $ maidId = 0
+            m "My name is [maidName] and I am at level [maidsList[0].level] with [maidsList[0].xp] exp. My skills are: [maidsList[0].cleaning] cleaning, [maidsList[0].cooking] cooking, [maidsList[0].hospitality] hospitality and [maidsList[0].gardening] gardening."
             hide MaidNeutral with dissolve
             jump maidManagment1
 
@@ -549,7 +572,7 @@ label maidManagment1:
             hide CassandraNeutral with dissolve
             jump maidManagment1
 
-        "[maidsList[2].name]" if maidsList[2].status == "available" and maidsList[2].name in hiredMaidsList:
+        "[maidsList[2].name]" if maidsList[2].name in hiredMaidsList:
             $ maidId = 2
             $ nameManaged = maidsList[maidId].name
             show EmilyNeutral with dissolve
@@ -557,7 +580,7 @@ label maidManagment1:
             hide EmilyNeutral with dissolve
             jump maidManagment1
 
-        "[maidsList[3].name]" if maidsList[3].status == "available" and maidsList[3].name in hiredMaidsList:
+        "[maidsList[3].name]" if maidsList[3].name in hiredMaidsList:
             $ maidId = 3
             $ nameManaged = maidsList[maidId].name
             show RebeccaNeutral with dissolve
@@ -568,6 +591,9 @@ label maidManagment1:
 
         "Go back":
             jump managermenu
+
+
+
 
 
 label hireMaids:
