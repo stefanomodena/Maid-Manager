@@ -16,7 +16,7 @@
 
 
     class Maid:
-        def __init__(self, name, cleaning, cooking, hospitality, gardening, status, level, xp, hired):
+        def __init__(self, name, cleaning, cooking, hospitality, gardening, status, level, xp, hired, attributepoints):
             self.name = name
             self.cleaning = cleaning
             self.cooking = cooking
@@ -26,6 +26,7 @@
             self.level = level
             self.xp = xp
             self.hired = hired
+            self.attributepoints = attributepoints
     
     class Customer:
         def __init__(self, name, age, gender, requests):
@@ -97,10 +98,10 @@
 
 
 
-    firstMaid = Maid("Makoto", 6, 7, 8, 9, "available", 1, 0, True)
-    secondMaid = Maid("Cassandra", 6, 7, 8, 9, "available", 1, 0, False)
-    thirdMaid = Maid("Emily", 6, 7, 8, 9, "available", 1, 0, False)
-    fourthMaid = Maid("Rebecca", 6, 7, 8, 9, "available", 1, 0, False)
+    firstMaid = Maid("Makoto", 6, 7, 8, 9, "available", 1, 0, True, 0)
+    secondMaid = Maid("Cassandra", 6, 7, 8, 9, "available", 1, 0, False, 0)
+    thirdMaid = Maid("Emily", 6, 7, 8, 9, "available", 1, 0, False, 0)
+    fourthMaid = Maid("Rebecca", 6, 7, 8, 9, "available", 1, 0, False, 0)
 
     maidsList = [firstMaid, secondMaid, thirdMaid, fourthMaid]
     hiredMaidsList = [firstMaid.name]
@@ -115,16 +116,29 @@
     money = 0
 
 
+
+    neverBeenToSchool = True
+
     def levelingup(maid):
         global didLevel
         if maid.xp >= maid.level * 10:
             didLevel = True
             maid.level += 1
+            maid.attributepoints += 1
             maid.xp = 0
             return didLevel
         else:
             didLevel = False
             return didLevel
+
+    def attributeLevelUp(maid, skill_name):
+        global attributeText
+        if maid.attributepoints > 0:
+            setattr(maid, skill_name, getattr(maid, skill_name) + 1)
+            maid.attributepoints -= 1
+            attributeText = f"Success! Her {skill_name} skill was improved!"
+        else:
+            attributeText = "She didn't had enough attribute points!"
 
     
     
@@ -438,13 +452,9 @@ label managermenu:
 
             jump hireMaids
 
-        "Upgrade maids":
-
-            jump construction
-
         "Maid School":
 
-            jump construction
+            jump MaidSchool
 
         "rest for the day":
 
@@ -546,7 +556,7 @@ label taskResolution:
         m "[ResolutionText]"
 
 
-        
+
     jump managermenu
 
 
@@ -560,12 +570,52 @@ label maidManagment1:
         "[maidName]":
             show MaidNeutral with dissolve
             $ maidId = 0
-            m "My name is [maidName] and I am at level [maidsList[0].level] with [maidsList[0].xp] exp. My skills are: [maidsList[0].cleaning] cleaning, [maidsList[0].cooking] cooking, [maidsList[0].hospitality] hospitality and [maidsList[0].gardening] gardening."
+            m "My name is [maidName] and I am at level [maidsList[0].level] with [maidsList[0].xp] exp, I have [maidsList[0].attributepoints] attribute points. My skills are: [maidsList[0].cleaning] cleaning, [maidsList[0].cooking] cooking, [maidsList[0].hospitality] hospitality and [maidsList[0].gardening] gardening."
+            menu:
+                "What would you like to do?"
+
+                "Distribute attribute points":
+                    menu:
+                        "Which attribute would you like to improve?"
+
+                        "Cleaning":
+                            
+                            $ attributeLevelUp(maidsList[0], "cleaning")
+
+                            "[attributeText]"
+                            jump maidManagment1
+
+                        "Cooking":
+                            $ attributeLevelUp(maidsList[0], "cooking")
+
+                            "[attributeText]"
+                            jump maidManagment1
+                        "Hospitality":
+                            $ attributeLevelUp(maidsList[0], "hospitality")
+
+                            "[attributeText]"
+                            jump maidManagment1
+                        "Gardening":
+                            $ attributeLevelUp(maidsList[0], "gardening")
+
+                            "[attributeText]"
+                            jump maidManagment1
+
+                "Talk to her":
+                    pov "How are you, [maidName]?"
+
+                    m "I'm great! Thanks for asking!"
+
+                    jump maidManagment1
+                "go back":
+                    jump maidManagment1
+
             hide MaidNeutral with dissolve
             jump maidManagment1
 
         "[maidsList[1].name]" if maidsList[1].name in hiredMaidsList:
             $ maidId = 1
+            m "My name is [maidsList[maidId].name] and I am at level [maidsList[maidId].level] with [maidsList[maidId].xp] exp. My skills are: [maidsList[maidId].cleaning] cleaning, [maidsList[maidId].cooking] cooking, [maidsList[maidId].hospitality] hospitality and [maidsList[maidId].gardening] gardening."
             $ nameManaged = maidsList[maidId].name
             show CassandraNeutral with dissolve
             "This is [nameManaged]"
@@ -573,18 +623,16 @@ label maidManagment1:
             jump maidManagment1
 
         "[maidsList[2].name]" if maidsList[2].name in hiredMaidsList:
-            $ maidId = 2
-            $ nameManaged = maidsList[maidId].name
             show EmilyNeutral with dissolve
-            "This is [nameManaged]"
+            $ maidId = 2
+            m "My name is [maidsList[maidId].name] and I am at level [maidsList[maidId].level] with [maidsList[maidId].xp] exp. My skills are: [maidsList[maidId].cleaning] cleaning, [maidsList[maidId].cooking] cooking, [maidsList[maidId].hospitality] hospitality and [maidsList[maidId].gardening] gardening."
             hide EmilyNeutral with dissolve
             jump maidManagment1
 
         "[maidsList[3].name]" if maidsList[3].name in hiredMaidsList:
-            $ maidId = 3
-            $ nameManaged = maidsList[maidId].name
             show RebeccaNeutral with dissolve
-            "This is [nameManaged]"
+            $ maidId = 3
+            m "My name is [maidsList[maidId].name] and I am at level [maidsList[maidId].level] with [maidsList[maidId].xp] exp. My skills are: [maidsList[maidId].cleaning] cleaning, [maidsList[maidId].cooking] cooking, [maidsList[maidId].hospitality] hospitality and [maidsList[maidId].gardening] gardening."
             hide RebeccaNeutral with dissolve
             jump maidManagment1
 
@@ -647,6 +695,21 @@ label hireMaids:
         "Go back":
             jump managermenu
 
+
+
+label MaidSchool:
+
+
+
+    if neverBeenToSchool:
+        m "This is Maid School!"
+        $ neverBeenToSchool = False
+    else:
+        m "Welcome back to Maid School!"
+
+    pov "Ok!"
+
+    jump managermenu
 
 
 label construction:
